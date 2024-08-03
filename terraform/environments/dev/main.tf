@@ -2,32 +2,6 @@ provider "aws" {
   region = var.region
 }
 
-resource "aws_s3_bucket" "terraform_state" {
-  bucket_prefix = "rbassmnt-state-bucket-"
-  force_destroy = true # Allows bucket to be deleted even if it contains objects
-
-  tags = {
-    Name        = "terraform-state-bucket"
-    Environment = "dev"
-  }
-}
-
-resource "aws_dynamodb_table" "terraform_lock" {
-  name           = "terraform-locks"
-  hash_key       = "LockID"
-  billing_mode   = "PAY_PER_REQUEST" # Use "PROVISIONED" if you need to set read/write capacity
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-
-  tags = {
-    Name        = "terraform-locks"
-    Environment = "dev"
-  }
-}
-
-
 module "vpc" {
   source = "../../modules/vpc"
   name = "dev-vpc"
