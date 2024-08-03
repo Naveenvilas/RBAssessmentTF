@@ -2,20 +2,20 @@ provider "aws" {
   region = var.region
 }
 
-resource "aws_s3_bucket" "terraform_state_bucket" {
+resource "aws_s3_bucket" "rbktksterraformstate" {
   bucket = "rbktksterraformstate"
 
 }
 
-resource "aws_s3_bucket_versioning" "terraform_state_bucket" {
-  bucket = aws_s3_bucket.terraform_state_bucket.id
+resource "aws_s3_bucket_versioning" "rbktksterraformstate" {
+  bucket = aws_s3_bucket.rbktksterraformstate.id
   versioning_configuration {
     status = "Enabled"
   }
 }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state_bucket" {
-  bucket = aws_s3_bucket.terraform_state_bucket.id
+resource "aws_s3_bucket_server_side_encryption_configuration" "rbktksterraformstate" {
+  bucket = aws_s3_bucket.rbktksterraformstate.id
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
