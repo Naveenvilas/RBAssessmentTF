@@ -4,7 +4,6 @@ provider "aws" {
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "3.14.3"
 
   name = "main"
   cidr = "10.0.0.0/16"
@@ -27,10 +26,10 @@ module "vpc" {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "18.29.0"
+  version = "20.0"
 
   cluster_name    = "my-eks"
-  cluster_version = "1.23"
+  cluster_version = "1.30"
 
   cluster_endpoint_private_access = true
   cluster_endpoint_public_access  = true
