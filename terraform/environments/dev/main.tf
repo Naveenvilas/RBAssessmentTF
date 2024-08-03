@@ -28,14 +28,6 @@ module "eks" {
   min_capacity = 1
 }
 
-output "s3_bucket_id" {
-  value = aws_s3_bucket.terraform_state.id
-}
-
-output "dynamodb_table_name" {
-  value = aws_dynamodb_table.terraform_lock.name
-}
-
 output "vpc_id" {
   value = module.vpc.vpc_id
 }
