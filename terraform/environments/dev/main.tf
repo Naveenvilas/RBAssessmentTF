@@ -3,40 +3,82 @@ provider "aws" {
 }
 
 module "vpc" {
-  source = "../../modules/vpc"
-  name = "dev-vpc"
-  cidr_block = "10.0.0.0/16"
-  azs = ["us-west-2a", "us-west-2b", "us-west-2c"]
-  public_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  private_subnets = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
-}
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "3.14.3"
 
-module "iam" {
-  source = "../../modules/iam"
+  name = "main"
+  cidr = "10.0.0.0/16"
+
+  azs             = ["us-east-1a", "us-east-1b"]
+  private_subnets = ["10.0.0.0/19", "10.0.32.0/19"]
+  public_subnets  = ["10.0.64.0/19", "10.0.96.0/19"]
+
+  enable_nat_gateway     = true
+  single_nat_gateway     = true
+  one_nat_gateway_per_az = false
+
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  tags = {
+    Environment = "prod"
+  }
 }
 
 module "eks" {
-  source = "../../modules/eks"
-  cluster_name = "dev-eks-cluster"
-  cluster_version = "1.28"
-  subnets = module.vpc.private_subnets
-  cluster_role_arn = module.iam.eks_cluster_role_arn
-  node_role_arn = module.iam.eks_node_group_role_arn
-  node_instance_type = "t3.medium"
-  desired_capacity = 2
-  max_capacity = 3
-  min_capacity = 1
-}
+  source  = "terraform-aws-modules/eks/aws"
+  version = "18.29.0"
 
-output "vpc_id" {
-  value = module.vpc.vpc_id
-}
+  cluster_name    = "my-eks"
+  cluster_version = "1.23"
 
-output "eks_cluster_id" {
-  value = module.eks.cluster_id
-}
+  cluster_endpoint_private_access = true
+  cluster_endpoint_public_access  = true
 
-output "eks_cluster_endpoint" {
-  value = module.eks.cluster_endpoint
-}
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets
 
+  enable_irsa = true
+
+  eks_managed_node_group_defaults = {
+    disk_size = 50
+  }
+
+  eks_managed_node_groups = {
+    general = {
+      desired_size = 1
+      min_size     = 1
+      max_size     = 10
+
+      labels = {
+        role = "general"
+      }
+
+      instance_types = ["t3.small"]
+      capacity_type  = "ON_DEMAND"
+    }
+
+    spot = {
+      desired_size = 1
+      min_size     = 1
+      max_size     = 10
+
+      labels = {
+        role = "spot"
+      }
+
+      taints = [{
+        key    = "market"
+        value  = "spot"
+        effect = "NO_SCHEDULE"
+      }]
+
+      instance_types = ["t3.micro"]
+      capacity_type  = "SPOT"
+    }
+  }
+
+  tags = {
+    Environment = "prod"
+  }
+}
